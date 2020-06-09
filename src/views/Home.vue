@@ -13,8 +13,8 @@
           >
           <el-menu-item-group>
             <template slot="title">列表信息</template>
-            <el-menu-item index="/book/list">图书</el-menu-item>
-            <el-menu-item index="/user/list">选项2</el-menu-item>
+            <el-menu-item index="/Staff/list">职员</el-menu-item>
+            <el-menu-item index="/ReaderType/list">阅读</el-menu-item>
           </el-menu-item-group>
           <el-menu-item-group title="分组2">
             <el-menu-item index="1-3">选项3</el-menu-item>
@@ -52,7 +52,6 @@ export default {
 
 <style>
 .el-header {
-  /* background-color: #b3c0d1; */
   color: #333;
   line-height: 60px;
 }

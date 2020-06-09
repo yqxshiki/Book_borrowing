@@ -5,13 +5,10 @@ import store from './store'
 import './plugins/element.js'
 import './plugins/avue'
 
-import axios from 'axios'
-// import Vue from 'vue'
+import http from './http'
+Vue.prototype.$axios = http;
 
-Vue.prototype.$axios = axios.create({
-  baseURL: 'http://129.211.11.64:801/api'
-})
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
 new Vue({
   router,

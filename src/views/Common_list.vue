@@ -1,6 +1,7 @@
 <template>
   <div id="Common_list">
     <avue-crud
+      v-if="this.option.column !== ''"
       :data="data"
       :option="option"
       v-model="obj"
@@ -14,6 +15,7 @@
 <script>
 export default {
   name: 'Common_list',
+  props: ['path'],
   data() {
     return {
       obj: {},
@@ -24,7 +26,6 @@ export default {
         align: 'center',
         menuAlign: 'center',
         column: [
-          { label: 'id', prop: 'Sid' },
           { label: '姓名', prop: 'SName' },
           { label: '性别', prop: 'Sex' },
           {
@@ -36,66 +37,16 @@ export default {
           },
           { label: '学历', prop: 'Education' },
         ],
-        // column: [
-        //   {
-        //     label: '图书编号',
-        //     prop: 'number',
-        //   },
-        //   {
-        //     label: '出版社编号',
-        //     prop: 'number',
-        //   },
-        //   {
-        //     label: '图书类型编号',
-        //     prop: 'name',
-        //   },
-        //   {
-        //     label: '作者',
-        //     prop: 'author',
-        //   },
-        //   {
-        //     label: '书名',
-        //     prop: 'name',
-        //   },
-        //   {
-        //     label: '作者',
-        //     prop: 'author',
-        //   },
-        //   {
-        //     label: '价格',
-        //     prop: 'number',
-        //   },
-        //   {
-        //     label: '页码',
-        //     prop: 'name',
-        //   },
-        //   {
-        //     label: '库存总量',
-        //     prop: 'author',
-        //   },
-        //   {
-        //     label: '现存量',
-        //     prop: 'number',
-        //   },
-        //   {
-        //     label: '入库时间',
-        //     prop: 'name',
-        //   },
-        //   {
-        //     label: '借出次数',
-        //     prop: 'author',
-        //   },
-        // ],
       },
     }
   },
   methods: {
     async getinfo() {
-      const res = await this.$axios.get('/Staff/GetAllAsync')
+      const res = await this.$axios.get(`/${this.path}/GetAllAsync`)
       this.data = res.data
     },
     async save(row, done, loading) {
-      await this.$axios.post('/Staff/Add', row)
+      await this.$axios.post(`/${this.path}/Add`, row)
       this.$message({
         message: '创建成功',
         type: 'success',
@@ -106,7 +57,7 @@ export default {
     },
 
     async update(row, index, done, loading) {
-      await this.$axios.post('/Staff/Update', row)
+      await this.$axios.post(`/${this.path}/Update`, row)
       this.$message({
         message: '修改成功',
         type: 'success',
@@ -116,16 +67,33 @@ export default {
       loading()
     },
     async remove(row, index) {
-      await this.$axios.delete('/Staff/DeleteStaff', row._id)
+      try {
+        await this.$confirm('是否确认删除?')
+      } catch (e) {
+        return
+      }
+      let arr = this.get_id(row)
+      let _id = arr[1]
+      await this.$axios.delete(`/${this.path}/Delete?id=${_id}`)
       this.$message({
         message: '删除成功',
         type: 'success',
       })
       this.getinfo()
     },
+    get_id(data) {
+      for (var key in data) return [key, data[key]]
+    },
+    async get_column() {
+      const res = await this.$axios.get(`/${this.path}/Info`)
+      var value_name = res.data.response.replace(/'/g, '"')
+      var column = JSON.parse(value_name)
+      this.$set(this.option, 'column', column)
+    },
   },
   created() {
     this.getinfo()
+    this.get_column()
   },
 }
 </script>
