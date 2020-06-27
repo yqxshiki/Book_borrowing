@@ -15,7 +15,7 @@
         </span>
       </div>
       <div>
-        <el-form :model="ruleForm"
+        <el-form :model="login_form"
                  status-icon
                  :rules="rules"
                  ref="login_form"
@@ -23,13 +23,13 @@
           <el-form-item label="用户名"
                         prop="name">
             <el-input type="name"
-                      v-model="login_form.name"
+                      v-model="login_form.loginName"
                       autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="密码"
                         prop="pass">
             <el-input type="pass"
-                      v-model="login_form.pass"
+                      v-model="login_form.loginPwd"
                       autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item>
@@ -43,8 +43,9 @@
         </el-form>
       </div>
     </el-card>
+
     <!-- 注册 -->
-    <el-card class="box-card  over2"
+    <!-- <el-card class="box-card  over2"
              ref="overturn">
       <div slot="header"
            class="clearfix">
@@ -83,11 +84,12 @@
           </el-form-item>
         </el-form>
       </div>
-    </el-card>
+    </el-card> -->
   </div>
 </template>
 
 <script>
+import { setToken } from '../lib/utils'
 export default {
   name: "login",
   data () {
@@ -103,8 +105,8 @@ export default {
     };
     return {
       login_form: {
-        name: "",
-        pass: ""
+        loginName: "",
+        loginPwd: ""
       },
       register_form: {
         name: "",
@@ -113,31 +115,28 @@ export default {
       rules: {
         name: [{ validator: validatePass, trigger: "blur" }],
         pass: [{ validator: validatePass2, trigger: "blur" }]
-      }
+      },
+      setToken
     };
   },
   methods: {
     overturn () {
       var login = document.getElementsByClassName("box-card")[0]
       var register = document.getElementsByClassName("box-card")[1]
-
       login.classList.toggle('login_overturn')
       register.classList.toggle('register_overturn')
-
-
     },
     async login () {
       if (
-        this.ruleForm.name == "" ||
-        this.ruleForm.pass == ""
+        this.login_form.loginName == "" ||
+        this.login_form.loginPwd == ""
       ) {
         this.$message({
           message: "请输入用户名和密码",
           type: "warning"
         });
       } else {
-        const data = await this.$axios.post(`/Login/Login?name=${this.ruleForm.name}&pass=${this.ruleForm.pass}`);
-        console.log(data)
+        const data = await this.$axios.post("/Login/Login", this.login_form);
         if (data.data.response == null) {
           return
         } else {
@@ -145,7 +144,7 @@ export default {
             message: "恭喜你！登录成功",
             type: "success"
           });
-          sessionStorage.book_token = data.data.response.token;
+          this.setToken(data.data.response.token)
           this.$router.push("/");
         }
 

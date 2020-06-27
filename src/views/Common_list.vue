@@ -1,14 +1,12 @@
 <template>
   <div id="Common_list">
-    <avue-crud
-      v-if="this.option.column !== ''"
-      :data="data"
-      :option="option"
-      v-model="obj"
-      @row-save="save"
-      @row-del="remove"
-      @row-update="update"
-    ></avue-crud>
+    <avue-crud v-if="this.isColumn"
+               :data="data"
+               :option="option"
+               v-model="obj"
+               @row-save="save"
+               @row-del="remove"
+               @row-update="update"></avue-crud>
   </div>
 </template>
 
@@ -16,8 +14,9 @@
 export default {
   name: 'Common_list',
   props: ['path'],
-  data() {
+  data () {
     return {
+      isColumn: false,
       obj: {},
       data: [],
       option: {
@@ -26,26 +25,26 @@ export default {
         align: 'center',
         menuAlign: 'center',
         column: [
-          { label: '姓名', prop: 'SName' },
-          { label: '性别', prop: 'Sex' },
+          { label: '读者类型名', prop: 'ReaderTypeName' },
           {
-            label: '生日',
-            prop: 'Birthday',
-            type: 'data',
-            format: 'yyyy-MM-dd hh:mm:ss',
-            valueFormat: 'yyyy-MM-dd hh:mm:ss',
+            label: '可借阅册数',
+            prop: 'BorrowNumbers',
+            type: 'number',
           },
-          { label: '学历', prop: 'Education' },
+          {            label: '借期天数', prop: 'BorrowDays',
+            type: 'number',          },
+          {            label: '可续借天数', prop: 'RenewDays',
+            type: 'number',          }
         ],
       },
     }
   },
   methods: {
-    async getinfo() {
+    async getinfo () {
       const res = await this.$axios.get(`/${this.path}/GetAllAsync`)
       this.data = res.data
     },
-    async save(row, done, loading) {
+    async save (row, done, loading) {
       await this.$axios.post(`/${this.path}/Add`, row)
       this.$message({
         message: '创建成功',
@@ -56,8 +55,10 @@ export default {
       loading()
     },
 
-    async update(row, index, done, loading) {
-      await this.$axios.post(`/${this.path}/Update`, row)
+    async update (row, index, done, loading) {
+      const data = JSON.parse(JSON.stringify(row))
+      delete data.$index
+      const res = await this.$axios.post(`/${this.path}/Update`, data)
       this.$message({
         message: '修改成功',
         type: 'success',
@@ -66,7 +67,7 @@ export default {
       done()
       loading()
     },
-    async remove(row, index) {
+    async remove (row, index) {
       try {
         await this.$confirm('是否确认删除?')
       } catch (e) {
@@ -81,17 +82,19 @@ export default {
       })
       this.getinfo()
     },
-    get_id(data) {
+    get_id (data) {
       for (var key in data) return [key, data[key]]
     },
-    async get_column() {
+    // 获取字段
+    async get_column () {
       const res = await this.$axios.get(`/${this.path}/Info`)
-      var value_name = res.data.response.replace(/'/g, '"')
-      var column = JSON.parse(value_name)
+      const column = JSON.parse(res.data.response)
       this.$set(this.option, 'column', column)
+      this.isColumn = true
     },
   },
-  created() {
+  created () {
+    console.log(this.path)
     this.getinfo()
     this.get_column()
   },
